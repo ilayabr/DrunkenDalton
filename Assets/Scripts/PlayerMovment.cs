@@ -1,25 +1,25 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMovment : MonoBehaviour
 {
-
     private CharacterController controller;
-    public float speed = 12f; 
+    public float speed = 8f;
     public float gravity = -9.81f * 2;
-    public float jumpHeigth = 3f; 
+    [SerializeField] private Slider stamina;
+    [SerializeField] private Slider iFrameDisplay;
 
-    public Transform groundCheck; 
-    public float groundDistance =0.4f; 
-    public LayerMask groundMask; 
+    public Transform groundCheck;
+    public float groundDistance = 0.4f;
+    public LayerMask groundMask;
 
-    Vector3 velocity; 
+    Vector3 velocity;
 
-    bool isGrounded; 
-    bool isMoving;
-
-    private Vector3 lastPosition = new Vector3(0f, 0f, 0f);
+    private bool isGrounded;
+    private bool isInvincible = false;
 
 
     // Start is called before the first frame update
@@ -32,9 +32,9 @@ public class PlayerMovment : MonoBehaviour
     void Update()
     {
         // Ground check
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask); 
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
         //Resseting the default velocity 
-        if(isGrounded && velocity.y < 0)
+        if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
         }
@@ -47,34 +47,39 @@ public class PlayerMovment : MonoBehaviour
         Vector3 move = transform.right * x + transform.forward * z; // (right - red axis, forward - blue axis )
 
         // Acrually moving the player 
-        controller.Move(move * speed * Time.deltaTime);
-
-        //Check if the player can jump 
-        if(Input.GetButtonDown("Jump") && isGrounded)
-        {
-            // Actually jumping 
-            velocity.y = Mathf.Sqrt(jumpHeigth * -2f * gravity); 
-        }
+        controller.Move(move * (speed * Time.deltaTime));
 
         //Falling down 
         velocity.y += gravity * Time.deltaTime;
 
         //Exctuting the jump 
-        controller.Move(velocity * Time.deltaTime); 
+        controller.Move(velocity * Time.deltaTime);
 
-        if (lastPosition != gameObject.transform.position && isGrounded == true)
+        if (Input.GetKeyDown(KeyCode.Space) && stamina.value >= 2f)
         {
-                isMoving = true; 
-                // for later use 
-        }
-        else 
-        {
-            isMoving = false; 
-             // for later use 
+            stamina.value -= 2f;
+            StartCoroutine(IFrames());
+            controller.Move(move * (speed * 75 * Time.deltaTime));
         }
 
-        lastPosition = gameObject.transform.position;
-
+        stamina.value += 0.001f;
     }
 
+    private void FixedUpdate()
+    {
+        iFrameDisplay.value -= 0.05f;
+    }
+
+    IEnumerator IFrames()
+    {
+        isInvincible = true;
+        iFrameDisplay.value += 1f;
+        yield return new WaitForSeconds(1);
+        isInvincible = false;
+    }
+
+    public bool getIsInvincible()
+    {
+        return isInvincible;
+    }
 }

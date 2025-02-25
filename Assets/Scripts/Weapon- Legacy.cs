@@ -7,7 +7,7 @@ public class Weapon : MonoBehaviour
 
     public GameObject bulletPrefab;
     public Transform bulletSpawn;
-    public float bulletVelocity = 30f;
+    private float bulletVelocity = 100f;
     public float bulletLifeTime = 3f;
     
     void Update()
@@ -18,6 +18,7 @@ public class Weapon : MonoBehaviour
         }
     }
 
+    // ReSharper disable Unity.PerformanceAnalysis
     private void FireWeapon()
     {
         //spawning bullet

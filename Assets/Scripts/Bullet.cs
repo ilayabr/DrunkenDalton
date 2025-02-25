@@ -19,7 +19,7 @@ public class Bullet : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             print("Hit " + other.gameObject.name);
-            GameObject.Find("ScoreManager").GetComponent<ScoreManager>().LosePoint();
+            //here the player would lose HP
             Destroy(gameObject);
         }
     }

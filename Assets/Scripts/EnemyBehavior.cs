@@ -11,13 +11,13 @@ public class EnemyBehavior : MonoBehaviour
 
     public GameObject bulletPrefab;
     public Transform bulletSpawn;
-    public float bulletVelocity = 30f;
+    private float bulletVelocity = 100f;
     public float bulletLifeTime = 3f;
     private bool isHit = false;
 
     void Start()
     {
-        StartCoroutine(ShootPlayer());
+        Shoot();
     }
 
     void LateUpdate()
@@ -26,8 +26,6 @@ public class EnemyBehavior : MonoBehaviour
         lookDirection.Normalize();
         gameObject.transform.rotation = Quaternion.Slerp(gameObject.transform.rotation,
             Quaternion.LookRotation(lookDirection), 25f * Time.deltaTime);
-        
-        _animator.SetBool("isHit", isHit);
     }
 
     //action called by bullet on hit
@@ -44,8 +42,11 @@ public class EnemyBehavior : MonoBehaviour
     private IEnumerator GotHit()
     {
         isHit = true;
+        _animator.SetBool("isHit", isHit);
         yield return new WaitForSeconds(Random.Range(0, 10));
         isHit = false;
+        _animator.SetBool("isHit", isHit);
+        StartCoroutine(ShootPlayer());
     }
 
     //enemy shoots the player
@@ -56,8 +57,7 @@ public class EnemyBehavior : MonoBehaviour
         {
             FireWeapon();
         }
-
-        StartCoroutine(ShootPlayer());
+        StartCoroutine(GotHit());
     }
 
     private void FireWeapon()
@@ -66,6 +66,10 @@ public class EnemyBehavior : MonoBehaviour
         GameObject bullet = Instantiate(bulletPrefab, bulletSpawn.position, Quaternion.identity);
         //shooting bullet
         bullet.GetComponent<Rigidbody>().AddForce(bulletSpawn.forward.normalized * bulletVelocity, ForceMode.Impulse);
+        if (!player.GetComponent<PlayerMovment>().getIsInvincible())
+        {
+            GameObject.Find("ScoreManager").GetComponent<ScoreManager>().LosePoint();
+        }
         //destroy bullet after some time
         StartCoroutine(DestroyBulletAfterTime(bullet, bulletLifeTime));
     }
